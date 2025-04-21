@@ -209,12 +209,13 @@ func (p *Actor) invokeFunc(mb *mailbox, app cfacade.IApplication, fn cfacade.Inv
 		}
 
 		if rev := recover(); rev != nil {
-			clog.Errorf("[%s] Invoke error. [source = %s, target = %s->%s, type = %v]",
+			clog.Errorf("[%s] Invoke error. [source = %s, target = %s->%s, type = %v, recover = %v]",
 				mb.name,
 				m.Source,
 				m.Target,
 				m.FuncName,
 				funcInfo.InArgs,
+				rev,
 			)
 		}
 	}()

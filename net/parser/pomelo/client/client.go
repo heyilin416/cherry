@@ -317,7 +317,7 @@ func (p *Client) handleData() {
 func (p *Client) processMessage(msg *pomeloMessage.Message) {
 	defer func() {
 		if r := recover(); r != nil {
-			clog.Errorf("[%s] recover in executor. %s", p.TagName, string(debug.Stack()))
+			clog.Errorf("[%s] recover(%v) in executor. %s", p.TagName, r, string(debug.Stack()))
 		}
 	}()
 
