@@ -5,7 +5,6 @@ import (
 	"math/rand"
 	"reflect"
 	"strings"
-	"time"
 
 	cstring "github.com/cherry-game/cherry/extend/string"
 	cutils "github.com/cherry-game/cherry/extend/utils"
@@ -61,8 +60,6 @@ func RandList(minValue, maxValue int) []int {
 	}
 
 	length := maxValue - minValue + 1
-	t0 := time.Now()
-	rand.Seed(int64(t0.Nanosecond()))
 	list := rand.Perm(length)
 	for index := range list {
 		list[index] += minValue
@@ -92,8 +89,8 @@ func Rand(a []interface{}) (b interface{}) {
 }
 
 // Sum sums all values in int64 slice.
-func Sum(intslice []int64) (sum int64) {
-	for _, v := range intslice {
+func Sum(intSlice []int64) (sum int64) {
+	for _, v := range intSlice {
 		sum += v
 	}
 	return
