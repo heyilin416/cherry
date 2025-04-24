@@ -1,9 +1,10 @@
 package cherryString
 
 import (
-	"encoding/json"
 	"strconv"
 	goStrings "strings"
+
+	jsoniter "github.com/json-iterator/go"
 )
 
 // CutLastString 截取字符串中最后一段，以@beginChar开始,@endChar结束的字符
@@ -120,7 +121,7 @@ func ToString(value interface{}) string {
 	case uint64:
 		ret = strconv.Itoa(int(t))
 	default:
-		v, _ := json.Marshal(t)
+		v, _ := jsoniter.Marshal(t)
 		ret = string(v)
 	}
 

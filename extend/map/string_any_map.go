@@ -2,11 +2,11 @@
 package cherryMap
 
 import (
-	"encoding/json"
 	"sync"
 	"unsafe"
 
 	cutils "github.com/cherry-game/cherry/extend/utils"
+	jsoniter "github.com/json-iterator/go"
 )
 
 type StringAnyMap struct {
@@ -440,7 +440,7 @@ func (m *StringAnyMap) String() string {
 func (m *StringAnyMap) MarshalJSON() ([]byte, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
-	return json.Marshal(m.data)
+	return jsoniter.Marshal(m.data)
 }
 
 // UnmarshalJSON implements the interface UnmarshalJSON for json.Unmarshal.
@@ -450,7 +450,7 @@ func (m *StringAnyMap) UnmarshalJSON(b []byte) error {
 	if m.data == nil {
 		m.data = make(map[string]interface{})
 	}
-	if err := json.Unmarshal(b, &m.data); err != nil {
+	if err := jsoniter.Unmarshal(b, &m.data); err != nil {
 		return err
 	}
 	return nil

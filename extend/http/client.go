@@ -2,7 +2,6 @@ package cherryHttp
 
 import (
 	"bytes"
-	"encoding/json"
 	"io"
 	"net/http"
 	"net/url"
@@ -10,6 +9,7 @@ import (
 	"time"
 
 	clog "github.com/cherry-game/cherry/logger"
+	jsoniter "github.com/json-iterator/go"
 )
 
 var (
@@ -74,7 +74,7 @@ func POST(httpURL string, values map[string]string) ([]byte, *http.Response, err
 func PostJSON(httpURL string, values interface{}) ([]byte, *http.Response, error) {
 	client := http.Client{Timeout: DefaultTimeout}
 
-	jsonBytes, err := json.Marshal(values)
+	jsonBytes, err := jsoniter.Marshal(values)
 	if err != nil {
 		return nil, nil, err
 	}
