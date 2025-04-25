@@ -87,3 +87,37 @@ func IsNotPtr(val interface{}) bool {
 
 	return reflect.TypeOf(val).Kind() != reflect.Ptr
 }
+
+func GetField(obj interface{}, fieldName string) (*reflect.Value, error) {
+	val := reflect.ValueOf(obj)
+	if val.Kind() == reflect.Ptr {
+		val = val.Elem()
+	}
+
+	if val.Kind() != reflect.Struct {
+		return nil, fmt.Errorf("target is not struct")
+	}
+
+	field := val.FieldByName(fieldName)
+	if !field.IsValid() {
+		return nil, fmt.Errorf("field %s not exist", fieldName)
+	}
+
+	return &field, nil
+}
+
+func GetFieldValue(obj interface{}, fieldName string) (interface{}, error) {
+	field, err := GetField(obj, fieldName)
+	if err != nil {
+		return nil, err
+	}
+	return field.Interface(), nil
+}
+
+func GetFieldPtr(obj interface{}, fieldName string) (interface{}, error) {
+	field, err := GetField(obj, fieldName)
+	if err != nil {
+		return nil, err
+	}
+	return field.Addr().Interface(), nil
+}
