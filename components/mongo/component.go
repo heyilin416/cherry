@@ -5,12 +5,13 @@ import (
 	"fmt"
 	"time"
 
+	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
+	"go.mongodb.org/mongo-driver/v2/mongo/readpref"
+
 	cfacade "github.com/cherry-game/cherry/facade"
 	clog "github.com/cherry-game/cherry/logger"
 	cprofile "github.com/cherry-game/cherry/profile"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
-	"go.mongodb.org/mongo-driver/mongo/readpref"
 )
 
 const (
@@ -65,14 +66,13 @@ func (s *Component) Init() {
 				timeout = time.Duration(item.GetInt64("timeout", 3)) * time.Second
 			)
 
-			for j := 0; j < mongoIdList.Size(); j++ {
-				dbId := mongoIdList.Get(j).ToString()
-				if id != dbId {
-					continue
-				}
+			if !enable {
+				continue
+			}
 
-				if !enable {
-					panic(fmt.Sprintf("[dbName = %s] is disabled!", dbName))
+			for _, key := range mongoIdList.Keys() {
+				if mongoIdList.Get(key).ToString() != id {
+					continue
 				}
 
 				db, err := CreateDatabase(uri, dbName, timeout)
@@ -102,12 +102,12 @@ func CreateDatabase(uri, dbName string, timeout ...time.Duration) (*mongo.Databa
 	ctx, cancel := context.WithTimeout(context.Background(), tt)
 	defer cancel()
 
-	client, err := mongo.Connect(ctx, o)
+	client, err := mongo.Connect(o)
 	if err != nil {
 		return nil, err
 	}
 
-	err = client.Ping(context.Background(), readpref.Primary())
+	err = client.Ping(ctx, readpref.Primary())
 	if err != nil {
 		return nil, err
 	}
