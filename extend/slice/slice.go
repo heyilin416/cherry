@@ -44,9 +44,9 @@ func StringInSlice(v string, sl []string) bool {
 }
 
 // InInterface checks given interface in interface slice.
-func InInterface(v interface{}, sl []interface{}) bool {
+func InInterface[V any](v V, sl []V) bool {
 	for _, vv := range sl {
-		if vv == v {
+		if reflect.DeepEqual(vv, v) {
 			return true
 		}
 	}
@@ -68,13 +68,13 @@ func RandList(minValue, maxValue int) []int {
 }
 
 // Merge merges interface slices to one slice.
-func Merge(slice1, slice2 []interface{}) (c []interface{}) {
+func Merge[V any](slice1, slice2 []V) (c []V) {
 	c = append(slice1, slice2...)
 	return
 }
 
 // Reduce generates a new slice after parsing every value by reduce function
-func Reduce(slice []interface{}, a func(interface{}) interface{}) (destSlice []interface{}) {
+func Reduce[V any](slice []V, a func(V) V) (destSlice []V) {
 	for _, v := range slice {
 		destSlice = append(destSlice, a(v))
 	}
@@ -82,7 +82,12 @@ func Reduce(slice []interface{}, a func(interface{}) interface{}) (destSlice []i
 }
 
 // Rand returns random one from slice.
-func Rand(a []interface{}) (b interface{}) {
+func Rand[V any](a []V) (b V) {
+	length := len(a)
+	if length == 0 {
+		return
+	}
+
 	randNum := rand.Intn(len(a))
 	b = a[randNum]
 	return
@@ -97,7 +102,7 @@ func Sum(intSlice []int64) (sum int64) {
 }
 
 // Filter generates a new slice after filter function.
-func Filter(slice []interface{}, a func(interface{}) bool) (filterSlice []interface{}) {
+func Filter[V any](slice []V, a func(V) bool) (filterSlice []V) {
 	for _, v := range slice {
 		if a(v) {
 			filterSlice = append(filterSlice, v)
@@ -107,7 +112,7 @@ func Filter(slice []interface{}, a func(interface{}) bool) (filterSlice []interf
 }
 
 // Diff returns diff slice of slice1 - slice2.
-func Diff(slice1, slice2 []interface{}) (diffSlice []interface{}) {
+func Diff[V any](slice1, slice2 []V) (diffSlice []V) {
 	for _, v := range slice1 {
 		if !InInterface(v, slice2) {
 			diffSlice = append(diffSlice, v)
@@ -117,7 +122,7 @@ func Diff(slice1, slice2 []interface{}) (diffSlice []interface{}) {
 }
 
 // Intersect returns slice that are present in all the slice1 and slice2.
-func Intersect(slice1, slice2 []interface{}) (diffSlice []interface{}) {
+func Intersect[V any](slice1, slice2 []V) (diffSlice []V) {
 	for _, v := range slice1 {
 		if InInterface(v, slice2) {
 			diffSlice = append(diffSlice, v)
@@ -127,7 +132,7 @@ func Intersect(slice1, slice2 []interface{}) (diffSlice []interface{}) {
 }
 
 // Chunk separates one slice to some sized slice.
-func Chunk(slice []interface{}, size int) (chunkSlice [][]interface{}) {
+func Chunk[V any](slice []V, size int) (chunkSlice [][]V) {
 	if size >= len(slice) {
 		chunkSlice = append(chunkSlice, slice)
 		return
@@ -149,7 +154,7 @@ func Range(start, end, step int64) (intSlice []int64) {
 }
 
 // Pad prepends size number of val into slice.
-func Pad(slice []interface{}, size int, val interface{}) []interface{} {
+func Pad[V any](slice []V, size int, val V) []V {
 	if size <= len(slice) {
 		return slice
 	}
@@ -183,7 +188,7 @@ func Unique[T comparable](slice ...T) []T {
 }
 
 // Shuffle shuffles a slice.
-func Shuffle(slice []interface{}) []interface{} {
+func Shuffle[V any](slice []V) []V {
 	for i := 0; i < len(slice); i++ {
 		a := rand.Intn(len(slice))
 		b := rand.Intn(len(slice))
@@ -239,7 +244,7 @@ func StringToInt64(strSlice []string) []int64 {
 
 // IsSlice checks whether given value is array/slice.
 // Note that it uses reflect internally implementing this feature.
-func IsSlice(value interface{}) bool {
+func IsSlice[V any](value V) bool {
 	rv := reflect.ValueOf(value)
 	kind := rv.Kind()
 	if kind == reflect.Ptr {

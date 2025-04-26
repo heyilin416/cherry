@@ -114,6 +114,24 @@ func GetFieldValue(obj interface{}, fieldName string) (interface{}, error) {
 	return field.Interface(), nil
 }
 
+func SetFieldValue(fieldName string, fieldValue *reflect.Value, val interface{}) (bool, error) {
+	fieldType := fieldValue.Type()
+	valValue := reflect.ValueOf(val)
+	if valValue.Type() != fieldType {
+		return false, fmt.Errorf("type mismatch for field %s: expected %s, got %s", fieldName, fieldType, valValue.Type())
+	}
+
+	if !fieldValue.CanSet() {
+		return false, fmt.Errorf("field %s is not settable", fieldName)
+	}
+
+	if !reflect.DeepEqual(fieldValue.Interface(), valValue.Interface()) {
+		fieldValue.Set(valValue)
+		return true, nil
+	}
+	return false, nil
+}
+
 func GetFieldPtr(obj interface{}, fieldName string) (interface{}, error) {
 	field, err := GetField(obj, fieldName)
 	if err != nil {
