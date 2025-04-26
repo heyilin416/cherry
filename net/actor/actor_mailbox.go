@@ -1,8 +1,10 @@
 package cherryActor
 
 import (
+	"strings"
 	"time"
 
+	cconst "github.com/cherry-game/cherry/const"
 	creflect "github.com/cherry-game/cherry/extend/reflect"
 	cfacade "github.com/cherry-game/cherry/facade"
 	clog "github.com/cherry-game/cherry/logger"
@@ -22,12 +24,21 @@ func newMailbox(name string) mailbox {
 	}
 }
 
+func getLastSegment(funcName string) string {
+	parts := strings.Split(funcName, cconst.DOT)
+	if len(parts) > 0 {
+		return parts[len(parts)-1]
+	}
+	return funcName
+}
+
 func (p *mailbox) Register(funcName string, fn interface{}) {
 	if funcName == "" || len(funcName) < 1 {
 		clog.Errorf("[%s] Func name is empty.", fn)
 		return
 	}
 
+	funcName = getLastSegment(funcName)
 	funcInfo, err := creflect.GetFuncInfo(fn)
 	if err != nil {
 		clog.Errorf("funcName = %s, err = %v", funcName, err)
