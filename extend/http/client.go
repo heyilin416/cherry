@@ -19,15 +19,26 @@ var (
 	DefaultTimeout = 5 * time.Second
 )
 
-func GET(httpURL string, values ...map[string]string) ([]byte, *http.Response, error) {
+func GET(httpURL string, values map[string]string, headers ...map[string]string) ([]byte, *http.Response, error) {
 	client := http.Client{Timeout: DefaultTimeout}
 
 	if len(values) > 0 {
-		rst := ToUrlValues(values[0])
+		rst := ToUrlValues(values)
 		httpURL = AddParams(httpURL, rst)
 	}
 
-	rsp, err := client.Get(httpURL)
+	req, err := http.NewRequest("GET", httpURL, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	if len(headers) > 0 {
+		for k, v := range headers[0] {
+			req.Header.Add(k, v)
+		}
+	}
+
+	rsp, err := client.Do(req)
 	if err != nil {
 		return nil, rsp, err
 	}
@@ -47,11 +58,23 @@ func GET(httpURL string, values ...map[string]string) ([]byte, *http.Response, e
 	return bodyBytes, rsp, nil
 }
 
-func POST(httpURL string, values map[string]string) ([]byte, *http.Response, error) {
+func POST(httpURL string, values map[string]string, headers ...map[string]string) ([]byte, *http.Response, error) {
 	client := http.Client{Timeout: DefaultTimeout}
 
 	rst := ToUrlValues(values)
-	rsp, err := client.Post(httpURL, postContentType, strings.NewReader(rst.Encode()))
+	req, err := http.NewRequest("POST", httpURL, strings.NewReader(rst.Encode()))
+	if err != nil {
+		return nil, nil, err
+	}
+
+	req.Header.Set("Content-Type", postContentType)
+	if len(headers) > 0 {
+		for k, v := range headers[0] {
+			req.Header.Add(k, v)
+		}
+	}
+
+	rsp, err := client.Do(req)
 	if err != nil {
 		return nil, rsp, err
 	}
@@ -71,7 +94,7 @@ func POST(httpURL string, values map[string]string) ([]byte, *http.Response, err
 	return bodyBytes, rsp, nil
 }
 
-func PostJSON(httpURL string, values interface{}) ([]byte, *http.Response, error) {
+func PostJSON(httpURL string, values interface{}, headers ...map[string]string) ([]byte, *http.Response, error) {
 	client := http.Client{Timeout: DefaultTimeout}
 
 	jsonBytes, err := jsoniter.Marshal(values)
@@ -79,7 +102,19 @@ func PostJSON(httpURL string, values interface{}) ([]byte, *http.Response, error
 		return nil, nil, err
 	}
 
-	rsp, err := client.Post(httpURL, jsonContentType, bytes.NewBuffer(jsonBytes))
+	req, err := http.NewRequest("POST", httpURL, bytes.NewBuffer(jsonBytes))
+	if err != nil {
+		return nil, nil, err
+	}
+
+	req.Header.Set("Content-Type", jsonContentType)
+	if len(headers) > 0 {
+		for k, v := range headers[0] {
+			req.Header.Add(k, v)
+		}
+	}
+
+	rsp, err := client.Do(req)
 	if err != nil {
 		return nil, rsp, err
 	}
