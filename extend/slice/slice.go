@@ -10,6 +10,15 @@ import (
 	cutils "github.com/cherry-game/cherry/extend/utils"
 )
 
+// Addable 定义一个接口，表示支持 + 操作的类型
+type Addable interface {
+	~int | ~int8 | ~int16 | ~int32 | ~int64 |
+		~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64 | ~uintptr |
+		~float32 | ~float64 |
+		~complex64 | ~complex128
+}
+
+// Int32In 判定int是否在切片中
 func Int32In(v int32, sl []int32) (int, bool) {
 	for i, vv := range sl {
 		if vv == v {
@@ -19,6 +28,7 @@ func Int32In(v int32, sl []int32) (int, bool) {
 	return 0, false
 }
 
+// Int64In 判定int64是否在切片中
 func Int64In(v int64, sl []int64) (int, bool) {
 	for i, vv := range sl {
 		if vv == v {
@@ -28,7 +38,7 @@ func Int64In(v int64, sl []int64) (int, bool) {
 	return 0, false
 }
 
-// StringIn checks given string in string slice or not.
+// StringIn 判定字符串是否在切片中
 func StringIn(v string, sl []string) (int, bool) {
 	for i, vv := range sl {
 		if vv == v {
@@ -38,22 +48,17 @@ func StringIn(v string, sl []string) (int, bool) {
 	return 0, false
 }
 
-func StringInSlice(v string, sl []string) bool {
-	_, ok := StringIn(v, sl)
-	return ok
-}
-
-// InInterface checks given interface in interface slice.
-func InInterface[V any](v V, sl []V) bool {
-	for _, vv := range sl {
-		if reflect.DeepEqual(vv, v) {
-			return true
+// In 判定值是否在切片中
+func In[V comparable](v V, sl []V) (int, bool) {
+	for i, vv := range sl {
+		if vv == v {
+			return i, true
 		}
 	}
-	return false
+	return 0, false
 }
 
-// RandList generate an int slice from min to max.
+// RandList 生成一个包含[minValue, maxValue]中所有数字的随机数切片
 func RandList(minValue, maxValue int) []int {
 	if maxValue < minValue {
 		minValue, maxValue = maxValue, minValue
@@ -67,13 +72,13 @@ func RandList(minValue, maxValue int) []int {
 	return list
 }
 
-// Merge merges interface slices to one slice.
+// Merge 合并两个切片
 func Merge[V any](slice1, slice2 []V) (c []V) {
 	c = append(slice1, slice2...)
 	return
 }
 
-// Reduce generates a new slice after parsing every value by reduce function
+// Reduce 通过reduce函数解析每个值后生成一个新片
 func Reduce[V any](slice []V, a func(V) V) (destSlice []V) {
 	for _, v := range slice {
 		destSlice = append(destSlice, a(v))
@@ -81,7 +86,7 @@ func Reduce[V any](slice []V, a func(V) V) (destSlice []V) {
 	return
 }
 
-// Rand returns random one from slice.
+// Rand 从切片中随机返回一个值(如果切片为空，返回V类型的默认值)
 func Rand[V any](a []V) (b V) {
 	length := len(a)
 	if length == 0 {
@@ -93,15 +98,15 @@ func Rand[V any](a []V) (b V) {
 	return
 }
 
-// Sum sums all values in int64 slice.
-func Sum(intSlice []int64) (sum int64) {
+// Sum 对切片所有元素求和
+func Sum[V Addable](intSlice []V) (sum V) {
 	for _, v := range intSlice {
 		sum += v
 	}
 	return
 }
 
-// Filter generates a new slice after filter function.
+// Filter 获取切片中满足条件的值
 func Filter[V any](slice []V, a func(V) bool) (filterSlice []V) {
 	for _, v := range slice {
 		if a(v) {
@@ -111,27 +116,27 @@ func Filter[V any](slice []V, a func(V) bool) (filterSlice []V) {
 	return
 }
 
-// Diff returns diff slice of slice1 - slice2.
-func Diff[V any](slice1, slice2 []V) (diffSlice []V) {
+// Diff 求切片1中不在切片2中的值
+func Diff[V comparable](slice1, slice2 []V) (diffSlice []V) {
 	for _, v := range slice1 {
-		if !InInterface(v, slice2) {
+		if _, found := In(v, slice2); !found {
 			diffSlice = append(diffSlice, v)
 		}
 	}
 	return
 }
 
-// Intersect returns slice that are present in all the slice1 and slice2.
-func Intersect[V any](slice1, slice2 []V) (diffSlice []V) {
+// Intersect 求切片1和切片2的交集
+func Intersect[V comparable](slice1, slice2 []V) (sameSlice []V) {
 	for _, v := range slice1 {
-		if InInterface(v, slice2) {
-			diffSlice = append(diffSlice, v)
+		if _, found := In(v, slice2); found {
+			sameSlice = append(sameSlice, v)
 		}
 	}
 	return
 }
 
-// Chunk separates one slice to some sized slice.
+// Chunk 将切片分成指定大小的多个切片
 func Chunk[V any](slice []V, size int) (chunkSlice [][]V) {
 	if size >= len(slice) {
 		chunkSlice = append(chunkSlice, slice)
@@ -145,15 +150,15 @@ func Chunk[V any](slice []V, size int) (chunkSlice [][]V) {
 	return
 }
 
-// Range generates a new slice from begin to end with step duration of int64 number.
-func Range(start, end, step int64) (intSlice []int64) {
+// Range 生成一个从start到end范围指定步长下标切片
+func Range(start, end, step int) (indexSlice []int) {
 	for i := start; i <= end; i += step {
-		intSlice = append(intSlice, i)
+		indexSlice = append(indexSlice, i)
 	}
 	return
 }
 
-// Pad prepends size number of val into slice.
+// Pad 扩展切片到指定长度，用指定值来扩展
 func Pad[V any](slice []V, size int, val V) []V {
 	if size <= len(slice) {
 		return slice
@@ -164,6 +169,7 @@ func Pad[V any](slice []V, size int, val V) []V {
 	return slice
 }
 
+// Uniques 将多个切片去重
 func Uniques[T comparable](slices ...[]T) []T {
 	keys := map[T]struct{}{}
 
@@ -182,12 +188,12 @@ func Uniques[T comparable](slices ...[]T) []T {
 	return uniqueSlice
 }
 
-// Unique cleans repeated values in slice.
+// Unique 将一个切片去重
 func Unique[T comparable](slice ...T) []T {
 	return Uniques[T](slice)
 }
 
-// Shuffle shuffles a slice.
+// Shuffle 将切片打乱
 func Shuffle[V any](slice []V) []V {
 	for i := 0; i < len(slice); i++ {
 		a := rand.Intn(len(slice))
@@ -197,6 +203,7 @@ func Shuffle[V any](slice []V) []V {
 	return slice
 }
 
+// StringToInt 将字符串切片转换为int切片(不可转的跳过)
 func StringToInt(strSlice []string) []int {
 	var intSlice []int
 
@@ -212,6 +219,7 @@ func StringToInt(strSlice []string) []int {
 	return intSlice
 }
 
+// StringToInt32 将字符串切片转换为int32切片(不可转的跳过)
 func StringToInt32(strSlice []string) []int32 {
 	var intSlice []int32
 
@@ -227,6 +235,7 @@ func StringToInt32(strSlice []string) []int32 {
 	return intSlice
 }
 
+// StringToInt64 将字符串切片转换为int64切片(不可转的跳过)
 func StringToInt64(strSlice []string) []int64 {
 	var intSlice []int64
 
@@ -242,9 +251,9 @@ func StringToInt64(strSlice []string) []int64 {
 	return intSlice
 }
 
-// IsSlice checks whether given value is array/slice.
-// Note that it uses reflect internally implementing this feature.
-func IsSlice[V any](value V) bool {
+// IsSlice 检查给定的值是否为array/slice
+// 注意它在内部使用了reflect来实现这个特性
+func IsSlice(value interface{}) bool {
 	rv := reflect.ValueOf(value)
 	kind := rv.Kind()
 	if kind == reflect.Ptr {
@@ -259,6 +268,7 @@ func IsSlice[V any](value V) bool {
 	}
 }
 
+// IsEmptyWithString 检查切片中是否包含空字符串
 func IsEmptyWithString(p []string) bool {
 	for _, s := range p {
 		if strings.TrimSpace(s) == "" {
