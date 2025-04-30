@@ -10,13 +10,23 @@ import (
 	cutils "github.com/cherry-game/cherry/extend/utils"
 )
 
-// Addable 定义一个接口，表示支持 + 操作的类型
-type Addable interface {
-	~int | ~int8 | ~int16 | ~int32 | ~int64 |
-		~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64 | ~uintptr |
-		~float32 | ~float64 |
-		~complex64 | ~complex128
-}
+type (
+	// Addable 定义一个接口，表示支持 + 操作的类型
+	Addable interface {
+		~int | ~int8 | ~int16 | ~int32 | ~int64 |
+			~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64 | ~uintptr |
+			~float32 | ~float64 |
+			~complex64 | ~complex128
+	}
+
+	// Ordered 定义一个接口，表示支持比较操作的类型
+	Ordered interface {
+		~int | ~int8 | ~int16 | ~int32 | ~int64 |
+			~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64 | ~uintptr |
+			~float32 | ~float64 |
+			~string
+	}
+)
 
 // Int32In 判定int是否在切片中
 func Int32In(v int32, sl []int32) (int, bool) {
@@ -56,6 +66,21 @@ func In[V comparable](v V, sl []V) (int, bool) {
 		}
 	}
 	return 0, false
+}
+
+// Max 获取切片中的最大值
+func Max[V Ordered](slice []V) (max V) {
+	if len(slice) == 0 {
+		return
+	}
+
+	max = slice[0]
+	for _, v := range slice {
+		if v > max {
+			max = v
+		}
+	}
+	return
 }
 
 // RandList 生成一个包含[minValue, maxValue]中所有数字的随机数切片

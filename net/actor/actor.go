@@ -4,9 +4,11 @@ import (
 	"strings"
 	"time"
 
+	ccode "github.com/cherry-game/cherry/code"
 	cutils "github.com/cherry-game/cherry/extend/utils"
 	cfacade "github.com/cherry-game/cherry/facade"
 	clog "github.com/cherry-game/cherry/logger"
+	cproto "github.com/cherry-game/cherry/net/proto"
 	"go.uber.org/zap/zapcore"
 )
 
@@ -151,6 +153,9 @@ func (p *Actor) processRemote() {
 			if childActor, foundChild := p.findChildActor(m); foundChild {
 				childActor.PostRemote(m)
 			} else {
+				retResponse(m.ClusterReply, &cproto.Response{
+					Code: ccode.ActorCallFail,
+				})
 				clog.Warnf("Child actor not found. path = %s", m.Target)
 			}
 		}
