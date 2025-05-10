@@ -121,7 +121,7 @@ func GetStackDir() []string {
 			continue
 		}
 
-		if _, ok := cslice.StringIn(thisDir, dir); ok {
+		if cslice.Index(dir, thisDir) >= 0 {
 			continue
 		}
 

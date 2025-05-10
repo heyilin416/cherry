@@ -28,44 +28,52 @@ type (
 	}
 )
 
-// Int32In 判定int是否在切片中
-func Int32In(v int32, sl []int32) (int, bool) {
+// Index 返回元素在切片中的位置(-1表示没有)
+func Index[V comparable](sl []V, v V) int {
 	for i, vv := range sl {
 		if vv == v {
-			return i, true
+			return i
 		}
 	}
-	return 0, false
+	return -1
 }
 
-// Int64In 判定int64是否在切片中
-func Int64In(v int64, sl []int64) (int, bool) {
-	for i, vv := range sl {
-		if vv == v {
-			return i, true
-		}
+// AppendUnique 添加一个值到切片中，如果切片中已经存在该值，则返回false
+func AppendUnique[V comparable](sl []V, v V) []V {
+	if Index(sl, v) < 0 {
+		sl = append(sl, v)
 	}
-	return 0, false
+	return sl
 }
 
-// StringIn 判定字符串是否在切片中
-func StringIn(v string, sl []string) (int, bool) {
-	for i, vv := range sl {
-		if vv == v {
-			return i, true
-		}
+// RemoveIndex 删除切片中的指定索引
+func RemoveIndex[V any](sl []V, index int) []V {
+	if index < 0 || index >= len(sl) {
+		return sl
 	}
-	return 0, false
+	return append(sl[:index], sl[index+1:]...)
 }
 
-// In 判定值是否在切片中
-func In[V comparable](v V, sl []V) (int, bool) {
-	for i, vv := range sl {
-		if vv == v {
-			return i, true
+// RemoveValue 删除切片中的指定值
+func RemoveValue[V comparable](sl []V, value V) []V {
+	result := make([]V, 0, len(sl))
+	for _, v := range sl {
+		if v != value {
+			result = append(result, v)
 		}
 	}
-	return 0, false
+	return result
+}
+
+// RemoveFunc 根据判定函数删除匹配的元素
+func RemoveFunc[V any](sl []V, predicate func(V) bool) []V {
+	result := make([]V, 0, len(sl))
+	for _, v := range sl {
+		if !predicate(v) {
+			result = append(result, v)
+		}
+	}
+	return result
 }
 
 // Max 获取切片中的最大值
@@ -131,6 +139,18 @@ func Sum[V Addable](intSlice []V) (sum V) {
 	return
 }
 
+// FilterOne 获取切片中满足条件的首值
+func FilterOne[V comparable](sl []V, a func(V) bool) (V, bool) {
+	for _, vv := range sl {
+		if a(vv) {
+			return vv, true
+		}
+	}
+
+	var zero V
+	return zero, false
+}
+
 // Filter 获取切片中满足条件的值
 func Filter[V any](slice []V, a func(V) bool) (filterSlice []V) {
 	for _, v := range slice {
@@ -144,7 +164,7 @@ func Filter[V any](slice []V, a func(V) bool) (filterSlice []V) {
 // Diff 求切片1中不在切片2中的值
 func Diff[V comparable](slice1, slice2 []V) (diffSlice []V) {
 	for _, v := range slice1 {
-		if _, found := In(v, slice2); !found {
+		if Index(slice2, v) < 0 {
 			diffSlice = append(diffSlice, v)
 		}
 	}
@@ -154,7 +174,7 @@ func Diff[V comparable](slice1, slice2 []V) (diffSlice []V) {
 // Intersect 求切片1和切片2的交集
 func Intersect[V comparable](slice1, slice2 []V) (sameSlice []V) {
 	for _, v := range slice1 {
-		if _, found := In(v, slice2); found {
+		if Index(slice2, v) >= 0 {
 			sameSlice = append(sameSlice, v)
 		}
 	}
