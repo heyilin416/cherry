@@ -1,0 +1,17 @@
+package cherryMap
+
+func GetKeys[K comparable, V any](m map[K]V) []K {
+	keys := make([]K, 0, len(m)) // 预分配内存
+	for k := range m {
+		keys = append(keys, k)
+	}
+	return keys
+}
+
+func GetValues[K comparable, V any](m map[K]V) []V {
+	values := make([]V, 0, len(m))
+	for _, v := range m {
+		values = append(values, v)
+	}
+	return values
+}
