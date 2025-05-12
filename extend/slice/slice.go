@@ -54,8 +54,8 @@ func RemoveIndex[V any](sl []V, index int) []V {
 	return append(sl[:index], sl[index+1:]...)
 }
 
-// RemoveValue 删除切片中的指定值
-func RemoveValue[V comparable](sl []V, value V) []V {
+// Remove 删除切片中的指定值
+func Remove[V comparable](sl []V, value V) []V {
 	result := make([]V, 0, len(sl))
 	for _, v := range sl {
 		if v != value {
@@ -135,6 +135,26 @@ func Rand[V any](a []V) (b V) {
 func Sum[V Addable](intSlice []V) (sum V) {
 	for _, v := range intSlice {
 		sum += v
+	}
+	return
+}
+
+// Count 统计切片中值的数量
+func Count[V comparable](sl []V, v V) (c int) {
+	for _, vv := range sl {
+		if vv == v {
+			c++
+		}
+	}
+	return
+}
+
+// CountFunc 统计切片中满足条件的数量
+func CountFunc[V any](slice []V, a func(V) bool) (c int) {
+	for _, v := range slice {
+		if a(v) {
+			c++
+		}
 	}
 	return
 }

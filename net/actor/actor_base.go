@@ -55,6 +55,10 @@ func (p *Base) NewChildPath(actorID, childID interface{}) string {
 	return cfacade.NewChildPath(p.path.NodeID, actorID, childID)
 }
 
+func (p *Base) NewMyParentPath() string {
+	return cfacade.NewPath(p.path.NodeID, p.path.ActorID)
+}
+
 func (p *Base) NewMyChildPath(childID interface{}) string {
 	return cfacade.NewChildPath(p.path.NodeID, p.path.ActorID, childID)
 }
