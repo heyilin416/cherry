@@ -51,7 +51,11 @@ func RemoveIndex[V any](sl []V, index int) []V {
 	if index < 0 || index >= len(sl) {
 		return sl
 	}
-	return append(sl[:index], sl[index+1:]...)
+
+	result := make([]V, 0, len(sl)-1)
+	result = append(result, sl[:index]...)
+	result = append(result, sl[index+1:]...)
+	return result
 }
 
 // Remove 删除切片中的指定值
@@ -106,9 +110,11 @@ func RandList(minValue, maxValue int) []int {
 }
 
 // Merge 合并两个切片
-func Merge[V any](slice1, slice2 []V) (c []V) {
-	c = append(slice1, slice2...)
-	return
+func Merge[V any](slice1, slice2 []V) []V {
+	result := make([]V, 0, len(slice1)+len(slice2))
+	result = append(result, slice1...)
+	result = append(result, slice2...)
+	return result
 }
 
 // Reduce 通过reduce函数解析每个值后生成一个新片
@@ -237,7 +243,6 @@ func Pad[V any](slice []V, size int, val V) []V {
 // Uniques 将多个切片去重
 func Uniques[T comparable](slices ...[]T) []T {
 	keys := map[T]struct{}{}
-
 	for _, slice := range slices {
 		for _, s := range slice {
 			keys[s] = struct{}{}
@@ -245,11 +250,9 @@ func Uniques[T comparable](slices ...[]T) []T {
 	}
 
 	var uniqueSlice []T
-
 	for t := range keys {
 		uniqueSlice = append(uniqueSlice, t)
 	}
-
 	return uniqueSlice
 }
 
