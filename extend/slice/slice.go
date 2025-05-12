@@ -28,8 +28,8 @@ type (
 	}
 )
 
-// Index 返回元素在切片中的位置(-1表示没有)
-func Index[V comparable](sl []V, v V) int {
+// IndexOf 返回元素在切片中的位置(-1表示没有)
+func IndexOf[V comparable](sl []V, v V) int {
 	for i, vv := range sl {
 		if vv == v {
 			return i
@@ -38,9 +38,14 @@ func Index[V comparable](sl []V, v V) int {
 	return -1
 }
 
+// Contains 检测切片中是否包含指定值
+func Contains[V comparable](sl []V, v V) bool {
+	return IndexOf(sl, v) >= 0
+}
+
 // AppendUnique 添加一个值到切片中，如果切片中已经存在该值，则返回false
 func AppendUnique[V comparable](sl []V, v V) []V {
-	if Index(sl, v) < 0 {
+	if !Contains(sl, v) {
 		sl = append(sl, v)
 	}
 	return sl
@@ -63,17 +68,6 @@ func Remove[V comparable](sl []V, value V) []V {
 	result := make([]V, 0, len(sl))
 	for _, v := range sl {
 		if v != value {
-			result = append(result, v)
-		}
-	}
-	return result
-}
-
-// RemoveFunc 根据判定函数删除匹配的元素
-func RemoveFunc[V any](sl []V, predicate func(V) bool) []V {
-	result := make([]V, 0, len(sl))
-	for _, v := range sl {
-		if !predicate(v) {
 			result = append(result, v)
 		}
 	}
@@ -117,8 +111,8 @@ func Merge[V any](slice1, slice2 []V) []V {
 	return result
 }
 
-// Reduce 通过reduce函数解析每个值后生成一个新片
-func Reduce[V any](slice []V, a func(V) V) (destSlice []V) {
+// Map 生成转换后的新切片
+func Map[V any](slice []V, a func(V) V) (destSlice []V) {
 	for _, v := range slice {
 		destSlice = append(destSlice, a(v))
 	}
@@ -165,8 +159,8 @@ func CountFunc[V any](slice []V, a func(V) bool) (c int) {
 	return
 }
 
-// FilterOne 获取切片中满足条件的首值
-func FilterOne[V comparable](sl []V, a func(V) bool) (V, bool) {
+// Find 获取切片中满足条件的首值
+func Find[V comparable](sl []V, a func(V) bool) (V, bool) {
 	for _, vv := range sl {
 		if a(vv) {
 			return vv, true
@@ -190,7 +184,7 @@ func Filter[V any](slice []V, a func(V) bool) (filterSlice []V) {
 // Diff 求切片1中不在切片2中的值
 func Diff[V comparable](slice1, slice2 []V) (diffSlice []V) {
 	for _, v := range slice1 {
-		if Index(slice2, v) < 0 {
+		if !Contains(slice2, v) {
 			diffSlice = append(diffSlice, v)
 		}
 	}
@@ -200,7 +194,7 @@ func Diff[V comparable](slice1, slice2 []V) (diffSlice []V) {
 // Intersect 求切片1和切片2的交集
 func Intersect[V comparable](slice1, slice2 []V) (sameSlice []V) {
 	for _, v := range slice1 {
-		if Index(slice2, v) >= 0 {
+		if Contains(slice2, v) {
 			sameSlice = append(sameSlice, v)
 		}
 	}
@@ -221,7 +215,7 @@ func Chunk[V any](slice []V, size int) (chunkSlice [][]V) {
 	return
 }
 
-// Range 生成一个从start到end范围指定步长下标切片
+// Range 生成一个从start到end范围指定步长的新切片
 func Range(start, end, step int) (indexSlice []int) {
 	for i := start; i <= end; i += step {
 		indexSlice = append(indexSlice, i)
