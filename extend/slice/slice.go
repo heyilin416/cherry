@@ -112,7 +112,7 @@ func Merge[V any](slice1, slice2 []V) []V {
 }
 
 // Map 生成转换后的新切片
-func Map[V any](slice []V, a func(V) V) (destSlice []V) {
+func Map[V1 any, V2 any](slice []V1, a func(V1) V2) (destSlice []V2) {
 	for _, v := range slice {
 		destSlice = append(destSlice, a(v))
 	}
