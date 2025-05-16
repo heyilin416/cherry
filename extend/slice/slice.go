@@ -38,6 +38,14 @@ func IndexOf[V comparable](sl []V, v V) int {
 	return -1
 }
 
+// CheckIndex 检查索引是否在切片范围内
+func CheckIndex[V any](sl []V, index int) bool {
+	if index < 0 || index >= len(sl) {
+		return false
+	}
+	return true
+}
+
 // Contains 检测切片中是否包含指定值
 func Contains[V comparable](sl []V, v V) bool {
 	return IndexOf(sl, v) >= 0
