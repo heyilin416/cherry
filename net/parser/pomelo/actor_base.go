@@ -1,6 +1,8 @@
 package pomelo
 
 import (
+	"go.uber.org/zap/zapcore"
+
 	cfacade "github.com/cherry-game/cherry/facade"
 	clog "github.com/cherry-game/cherry/logger"
 	cactor "github.com/cherry-game/cherry/net/actor"
@@ -52,6 +54,11 @@ func Response(iActor cfacade.IActor, agentPath, sid string, mid uint32, v interf
 	}
 
 	iActor.Call(agentPath, ResponseFuncName, rsp)
+
+	if clog.PrintLevel(zapcore.DebugLevel) {
+		clog.Debugf("[Response] agentPath = %s, sid = %s, mid = %d, message = %+v",
+			agentPath, sid, mid, v)
+	}
 }
 
 func ResponseCode(iActor cfacade.IActor, agentPath, sid string, mid uint32, statusCode int32) {
@@ -62,6 +69,11 @@ func ResponseCode(iActor cfacade.IActor, agentPath, sid string, mid uint32, stat
 	}
 
 	iActor.Call(agentPath, ResponseFuncName, rsp)
+
+	if clog.PrintLevel(zapcore.DebugLevel) {
+		clog.Debugf("[ResponseCode] agentPath = %s, sid = %s, mid = %d, statusCode = %d",
+			agentPath, sid, mid, statusCode)
+	}
 }
 
 func Push(iActor cfacade.IActor, agentPath, sid, route string, v interface{}) {
@@ -83,6 +95,11 @@ func Push(iActor cfacade.IActor, agentPath, sid, route string, v interface{}) {
 	}
 
 	iActor.Call(agentPath, PushFuncName, rsp)
+
+	if clog.PrintLevel(zapcore.DebugLevel) {
+		clog.Debugf("[Push] agentPath = %s, sid = %s, route = %s, message = %+v",
+			agentPath, sid, route, v)
+	}
 }
 
 func Kick(iActor cfacade.IActor, agentPath, sid string, reason interface{}, closed bool) {
@@ -99,6 +116,9 @@ func Kick(iActor cfacade.IActor, agentPath, sid string, reason interface{}, clos
 	}
 
 	iActor.Call(agentPath, KickFuncName, rsp)
+
+	clog.Infof("[Kick] agentPath = %s, sid = %s, reason = %+v, closed = %t",
+		agentPath, sid, reason, closed)
 }
 
 func Broadcast(iActor cfacade.IActor, agentPath string, uidList []int64, allUID bool, route string, v interface{}) {
@@ -126,4 +146,9 @@ func Broadcast(iActor cfacade.IActor, agentPath string, uidList []int64, allUID 
 	}
 
 	iActor.Call(agentPath, BroadcastName, rsp)
+
+	if clog.PrintLevel(zapcore.DebugLevel) {
+		clog.Debugf("[Broadcast] agentPath = %s, uidList = %+v, allUID = %t, route = %s, message = %+v",
+			agentPath, uidList, allUID, route, v)
+	}
 }

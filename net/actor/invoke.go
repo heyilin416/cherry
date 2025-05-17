@@ -3,6 +3,7 @@ package cherryActor
 import (
 	"reflect"
 
+	"go.uber.org/zap/zapcore"
 	"google.golang.org/protobuf/proto"
 
 	ccode "github.com/cherry-game/cherry/code"
@@ -25,6 +26,12 @@ func InvokeLocalFunc(app cfacade.IApplication, fi *creflect.FuncInfo, m *cfacade
 	values := make([]reflect.Value, 2)
 	values[0] = reflect.ValueOf(m.Session) // session
 	values[1] = reflect.ValueOf(m.Args)    // args
+
+	if clog.PrintLevel(zapcore.DebugLevel) {
+		clog.Debugf("[InvokeLocalFunc] source =%s, sid = %s, uid = %d, target = %s, funcName = %s, message = %+v",
+			m.Source, m.Session.Sid, m.Session.Uid, m.Target, m.FuncName, values[1])
+	}
+
 	fi.Value.Call(values)
 }
 
