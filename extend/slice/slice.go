@@ -51,6 +51,18 @@ func Contains[V comparable](sl []V, v V) bool {
 	return IndexOf(sl, v) >= 0
 }
 
+// SafeSub 安全取子切片
+func SafeSub[V any](slice []V, start, end int) []V {
+	sliceLen := len(slice)
+	if start > sliceLen {
+		start = sliceLen
+	}
+	if end > sliceLen {
+		end = sliceLen
+	}
+	return slice[start:end]
+}
+
 // AppendUnique 添加一个值到切片中，如果切片中已经存在该值，则返回false
 func AppendUnique[V comparable](sl []V, v V) []V {
 	if !Contains(sl, v) {
