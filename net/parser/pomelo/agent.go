@@ -369,10 +369,11 @@ func (a *Agent) ResponseMID(mid uint32, v interface{}, isError ...bool) {
 
 	a.sendPending(pomeloMessage.Response, "", mid, v, isErr)
 	if clog.PrintLevel(zapcore.DebugLevel) {
-		clog.Debugf("[sid = %s,uid = %d] Response ok. [mid = %d, isError = %v]",
+		clog.Debugf("[sid = %s,uid = %d] Response ok. [mid = %d, message = %+v, isError = %v]",
 			a.SID(),
 			a.UID(),
 			mid,
+			v,
 			isErr,
 		)
 	}
@@ -382,10 +383,11 @@ func (a *Agent) Push(route string, val interface{}) {
 	a.sendPending(pomeloMessage.Push, route, 0, val, false)
 
 	if clog.PrintLevel(zapcore.DebugLevel) {
-		clog.Debugf("[sid = %s,uid = %d] Push ok. [route = %s]",
+		clog.Debugf("[sid = %s,uid = %d] Push ok. [route = %s, message = %+v]",
 			a.SID(),
 			a.UID(),
 			route,
+			val,
 		)
 	}
 }
@@ -427,6 +429,13 @@ func (a *Agent) Kick(reason interface{}, closed bool) {
 	if closed {
 		a.Close()
 	}
+
+	clog.Infof("[Kick] sid = %s, uid = %d, reason = %+v, closed = %t",
+		a.SID(),
+		a.UID(),
+		reason,
+		closed,
+	)
 }
 
 func (a *Agent) AddOnClose(fn OnCloseFunc) {

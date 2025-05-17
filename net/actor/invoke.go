@@ -28,7 +28,7 @@ func InvokeLocalFunc(app cfacade.IApplication, fi *creflect.FuncInfo, m *cfacade
 	values[1] = reflect.ValueOf(m.Args)    // args
 
 	if clog.PrintLevel(zapcore.DebugLevel) {
-		clog.Debugf("[InvokeLocalFunc] source =%s, sid = %s, uid = %d, target = %s, funcName = %s, message = %+v",
+		clog.Debugf("[InvokeLocalFunc] source =%s, sid = %s, uid = %d, target = %s -> %s, message = %+v",
 			m.Source, m.Session.Sid, m.Session.Uid, m.Target, m.FuncName, values[1])
 	}
 
