@@ -71,6 +71,14 @@ func AppendUnique[V comparable](sl []V, v V) []V {
 	return sl
 }
 
+// InsertSlice 在切片中插入一个值
+func InsertSlice[V any](slice []V, index int, value V) []V {
+	if index < 0 || index > len(slice) {
+		panic("index out of range")
+	}
+	return append(slice[:index], append([]V{value}, slice[index:]...)...)
+}
+
 // RemoveIndex 删除切片中的指定索引
 func RemoveIndex[V any](sl []V, index int) []V {
 	if index < 0 || index >= len(sl) {
@@ -189,6 +197,16 @@ func Find[V comparable](sl []V, a func(V) bool) (V, bool) {
 
 	var zero V
 	return zero, false
+}
+
+// FindIndex 获取切片中满足条件的首值的索引
+func FindIndex[V comparable](sl []V, a func(V) bool) int {
+	for i, vv := range sl {
+		if a(vv) {
+			return i
+		}
+	}
+	return -1
 }
 
 // Filter 获取切片中满足条件的值
