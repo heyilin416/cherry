@@ -19,6 +19,11 @@ func ToJson(i interface{}) string {
 	return string(bytes)
 }
 
+func DeepCopy(in, out interface{}) error {
+	b, _ := jsoniter.Marshal(in)
+	return jsoniter.Unmarshal(b, out)
+}
+
 func ReadMaps(path string, maps map[string]interface{}) error {
 	bytes, err := os.ReadFile(path)
 	if err != nil {

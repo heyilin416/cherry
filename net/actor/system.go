@@ -263,6 +263,10 @@ func (p *System) CallWait(source, target, funcName string, arg interface{}, repl
 		}
 
 	} else {
+		if sourcePath.ActorID == targetPath.ActorID && sourcePath.ChildID == targetPath.ChildID {
+			return ccode.ActorSourceEqualTarget
+		}
+
 		message := cfacade.GetMessage()
 		message.Source = source
 		message.Target = target
@@ -272,11 +276,7 @@ func (p *System) CallWait(source, target, funcName string, arg interface{}, repl
 
 		var result interface{}
 
-		if sourcePath.ActorID == targetPath.ActorID {
-			if sourcePath.ChildID == targetPath.ChildID {
-				return ccode.ActorSourceEqualTarget
-			}
-
+		if sourcePath.ActorID == targetPath.ActorID && targetPath.ChildID != "" {
 			childActor, found := p.GetChildActor(targetPath.ActorID, targetPath.ChildID)
 			if !found {
 				return ccode.ActorChildIDNotFound

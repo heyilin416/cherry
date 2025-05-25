@@ -303,6 +303,15 @@ func Shuffle[V any](slice []V) []V {
 	return slice
 }
 
+// ConvertAnySlice 将切片转换为any切片
+func ConvertAnySlice[T any](s []T) []any {
+	result := make([]any, len(s))
+	for i, v := range s {
+		result[i] = v
+	}
+	return result
+}
+
 // StringToInt 将字符串切片转换为int切片(不可转的跳过)
 func StringToInt(strSlice []string) []int {
 	var intSlice []int
