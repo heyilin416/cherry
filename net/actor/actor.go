@@ -255,7 +255,9 @@ func (p *Actor) findChildActor(m *cfacade.Message) (*Actor, bool) {
 
 func (p *Actor) onInit() {
 	p.state = WorkerState
-	p.handler.OnInit()
+	cutils.Try(p.handler.OnInit, func(err string) {
+		clog.Error(err)
+	})
 }
 
 func (p *Actor) onStop() {
