@@ -174,6 +174,16 @@ func Rand[V any](a []V) (b V) {
 	return
 }
 
+// RandIndex 随机返回切片的索引(如果切片为空，返回-1)
+func RandIndex[V any](a []V) int {
+	length := len(a)
+	if length == 0 {
+		return -1
+	}
+
+	return rand.Intn(len(a))
+}
+
 // Sum 对切片所有元素求和
 func Sum[V Addable](intSlice []V) (sum V) {
 	for _, v := range intSlice {
