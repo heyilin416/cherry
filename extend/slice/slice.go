@@ -102,6 +102,21 @@ func Remove[V comparable](sl []V, value V) []V {
 	return result
 }
 
+// Min 获取切片中的最小值
+func Min[V Ordered](slice []V) (min V) {
+	if len(slice) == 0 {
+		return
+	}
+
+	min = slice[0]
+	for _, v := range slice {
+		if v < min {
+			min = v
+		}
+	}
+	return
+}
+
 // Max 获取切片中的最大值
 func Max[V Ordered](slice []V) (max V) {
 	if len(slice) == 0 {
