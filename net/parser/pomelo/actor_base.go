@@ -134,7 +134,7 @@ func Broadcast(iActor cfacade.IActor, agentPath string, uidList []int64, allUID 
 
 	data, err := iActor.App().Serializer().Marshal(v)
 	if err != nil {
-		clog.Warnf("[Kick] Marshal error. v = %+v", v)
+		clog.Warnf("[Broadcast] Marshal error. route = %s, v = %+v", route, v)
 		return
 	}
 
