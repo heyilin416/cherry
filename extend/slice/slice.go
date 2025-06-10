@@ -28,6 +28,15 @@ type (
 	}
 )
 
+// CreateWithValue 创建一个指定长度的切片，并初始化所有元素为指定值
+func CreateWithValue[V any](v V, length int) []V {
+	sl := make([]V, length)
+	for i := range sl {
+		sl[i] = v
+	}
+	return sl
+}
+
 // IndexOf 返回元素在切片中的位置(-1表示没有)
 func IndexOf[V comparable](sl []V, v V) int {
 	for i, vv := range sl {
