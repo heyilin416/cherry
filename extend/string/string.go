@@ -34,6 +34,19 @@ func IsNotBlank(value string) bool {
 	return value != ""
 }
 
+func ToBool(value string) (bool, bool) {
+	val, err := strconv.ParseBool(value)
+	if err != nil {
+		return false, false
+	}
+	return val, true
+}
+
+func ToBoolD(value string) bool {
+	val, _ := strconv.ParseBool(value)
+	return val
+}
+
 func ToUint(value string, def ...uint) (uint, bool) {
 	val, err := strconv.ParseUint(value, 10, 32)
 	if err != nil {
@@ -108,6 +121,8 @@ func ToString(value interface{}) string {
 	switch t := value.(type) {
 	case string:
 		ret = t
+	case bool:
+		ret = strconv.FormatBool(t)
 	case int:
 		ret = strconv.Itoa(t)
 	case int32:
