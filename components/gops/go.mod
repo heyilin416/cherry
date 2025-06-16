@@ -3,7 +3,7 @@ module github.com/cherry-game/cherry/components/gops
 go 1.18
 
 require (
-	github.com/cherry-game/cherry v1.3.18
+	github.com/cherry-game/cherry v1.3.19
 	github.com/google/gops v0.3.28
 )
 
@@ -15,6 +15,6 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	go.uber.org/multierr v1.10.0 // indirect
 	go.uber.org/zap v1.26.0 // indirect
-	golang.org/x/sys v0.12.0 // indirect
+	golang.org/x/sys v0.30.0 // indirect
 	google.golang.org/protobuf v1.31.0 // indirect
 )

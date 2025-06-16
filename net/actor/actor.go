@@ -2,13 +2,11 @@ package cherryActor
 
 import (
 	"strings"
-	"time"
 
-	ccode "github.com/cherry-game/cherry/code"
+	ctime "github.com/cherry-game/cherry/extend/time"
 	cutils "github.com/cherry-game/cherry/extend/utils"
 	cfacade "github.com/cherry-game/cherry/facade"
 	clog "github.com/cherry-game/cherry/logger"
-	cproto "github.com/cherry-game/cherry/net/proto"
 	"go.uber.org/zap/zapcore"
 )
 
@@ -49,7 +47,7 @@ type (
 		event            *actorEvent           // event
 		child            *actorChild           // child actor
 		timer            *actorTimer           // timer
-		lastAt           int64                 // last process time
+		lastAt           int64                 // last process time (count of seconds)
 		arrivalElapsed   int64                 // arrival elapsed for message
 		executionElapsed int64                 // execution elapsed for message
 	}
@@ -103,7 +101,7 @@ func (p *Actor) processLocal() {
 		return
 	}
 
-	p.lastAt = time.Now().Unix()
+	p.lastAt = ctime.Now().ToSecond()
 
 	next, invoke := p.handler.OnLocalReceived(m)
 	if invoke {
@@ -135,7 +133,7 @@ func (p *Actor) processRemote() {
 		return
 	}
 
-	p.lastAt = time.Now().Unix()
+	p.lastAt = ctime.Now().ToSecond()
 
 	next, invoke := p.handler.OnRemoteReceived(m)
 	if invoke {
@@ -153,9 +151,6 @@ func (p *Actor) processRemote() {
 			if childActor, foundChild := p.findChildActor(m); foundChild {
 				childActor.PostRemote(m)
 			} else {
-				retResponse(m.ClusterReply, &cproto.Response{
-					Code: ccode.ActorCallFail,
-				})
 				clog.Warnf("Child actor not found. path = %s", m.Target)
 			}
 		}
@@ -170,7 +165,7 @@ func (p *Actor) processEvent() {
 		return
 	}
 
-	p.lastAt = time.Now().Unix()
+	p.lastAt = ctime.Now().ToSecond()
 	p.event.invokeFunc(eventData)
 }
 
@@ -199,10 +194,10 @@ func (p *Actor) invokeFunc(mb *mailbox, app cfacade.IApplication, fn cfacade.Inv
 		)
 	}
 
-	now := time.Now().UnixMilli()
+	now := ctime.Now().ToMillisecond()
 
 	defer func() {
-		p.executionElapsed = time.Now().UnixMilli() - now
+		p.executionElapsed = ctime.Now().ToMillisecond() - now
 		if p.executionElapsed > p.system.executionTimeout {
 			clog.Warnf("[%s] Invoke timeout.[source = %s, target = %s->%s, execution = %dms]",
 				mb.name,
@@ -214,13 +209,12 @@ func (p *Actor) invokeFunc(mb *mailbox, app cfacade.IApplication, fn cfacade.Inv
 		}
 
 		if rev := recover(); rev != nil {
-			clog.Errorf("[%s] Invoke error. [source = %s, target = %s->%s, type = %v, recover = %v]",
+			clog.Errorf("[%s] Invoke error. [source = %s, target = %s->%s, type = %v]",
 				mb.name,
 				m.Source,
 				m.Target,
 				m.FuncName,
 				funcInfo.InArgs,
-				rev,
 			)
 		}
 	}()
@@ -255,9 +249,7 @@ func (p *Actor) findChildActor(m *cfacade.Message) (*Actor, bool) {
 
 func (p *Actor) onInit() {
 	p.state = WorkerState
-	cutils.Try(p.handler.OnInit, func(err string) {
-		clog.Error(err)
-	})
+	p.handler.OnInit()
 }
 
 func (p *Actor) onStop() {
@@ -374,7 +366,7 @@ func newActor(actorID, childID string, handler cfacade.IActorHandler, c *System)
 
 	thisActor := Actor{
 		path: &cfacade.ActorPath{
-			NodeID:  c.NodeId(),
+			NodeID:  c.NodeID(),
 			ActorID: actorID,
 			ChildID: childID,
 		},
@@ -382,7 +374,7 @@ func newActor(actorID, childID string, handler cfacade.IActorHandler, c *System)
 		system:  c,
 		close:   make(chan struct{}, 1),
 		handler: handler,
-		lastAt:  time.Now().Unix(),
+		lastAt:  ctime.Now().ToSecond(),
 	}
 
 	localMailbox := newMailbox(LocalName)

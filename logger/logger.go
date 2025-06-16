@@ -18,7 +18,7 @@ var (
 	rw             sync.RWMutex             // mutex
 	DefaultLogger  *CherryLogger            // 默认日志对象(控制台输出)
 	loggers        map[string]*CherryLogger // 日志实例存储map(key:日志名称,value:日志实例)
-	nodeId         string                   // current node id
+	nodeID         string                   // current node id
 	printLevel     zapcore.Level            // cherry log print level
 	fileNameVarMap = map[string]string{}    // 日志输出文件名自定义变量
 )
@@ -37,27 +37,18 @@ func (c *CherryLogger) Print(v ...interface{}) {
 	c.Warn(v)
 }
 
-func NewNodeLogger(node cfacade.INode, opts ...zap.Option) *CherryLogger {
-	nodeId = node.NodeId()
+func SetNodeLogger(node cfacade.INode) {
+	nodeID = node.NodeID()
 	refLoggerName := node.Settings().Get("ref_logger").ToString()
 	if refLoggerName == "" {
 		DefaultLogger.Infof("RefLoggerName not found, used default console logger.")
-		return nil
-	}
-
-	SetFileNameVar("nodeId", node.NodeId())     // %nodeId
-	SetFileNameVar("nodeType", node.NodeType()) // %nodeTyp
-
-	return NewLogger(refLoggerName, opts...)
-}
-
-func SetNodeLogger(node cfacade.INode) {
-	logger := NewNodeLogger(node, zap.AddCallerSkip(1))
-	if logger == nil {
 		return
 	}
 
-	DefaultLogger = logger
+	SetFileNameVar("nodeid", node.NodeID())     // %nodeid
+	SetFileNameVar("nodetype", node.NodeType()) // %nodetype
+
+	DefaultLogger = NewLogger(refLoggerName, zap.AddCallerSkip(1))
 	printLevel = GetLevel(cprofile.PrintLevel())
 }
 
@@ -117,8 +108,8 @@ func NewConfigLogger(config *Config, opts ...zap.Option) *CherryLogger {
 	}
 
 	encoderConfig.EncodeLevel = func(level zapcore.Level, encoder zapcore.PrimitiveArrayEncoder) {
-		if nodeId != "" {
-			encoder.AppendString(fmt.Sprintf("%s  %-5s", nodeId, level.CapitalString()))
+		if nodeID != "" {
+			encoder.AppendString(fmt.Sprintf("%s  %-5s", nodeID, level.CapitalString()))
 		} else {
 			encoder.AppendString(level.CapitalString())
 		}

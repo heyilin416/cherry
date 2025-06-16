@@ -7,6 +7,7 @@ import (
 	"time"
 
 	cnet "github.com/cherry-game/cherry/extend/net"
+	ctime "github.com/cherry-game/cherry/extend/time"
 	cutils "github.com/cherry-game/cherry/extend/utils"
 	cfacade "github.com/cherry-game/cherry/facade"
 	clog "github.com/cherry-game/cherry/logger"
@@ -109,7 +110,7 @@ func (a *Agent) Unbind() {
 }
 
 func (a *Agent) SetLastAt() {
-	atomic.StoreInt64(&a.lastAt, time.Now().Unix())
+	atomic.StoreInt64(&a.lastAt, ctime.Now().ToSecond())
 }
 
 func (a *Agent) SendRaw(bytes []byte) {
@@ -369,11 +370,10 @@ func (a *Agent) ResponseMID(mid uint32, v interface{}, isError ...bool) {
 
 	a.sendPending(pomeloMessage.Response, "", mid, v, isErr)
 	if clog.PrintLevel(zapcore.DebugLevel) {
-		clog.Debugf("[sid = %s,uid = %d] Response ok. [mid = %d, message = %+v, isError = %v]",
+		clog.Debugf("[sid = %s,uid = %d] Response ok. [mid = %d, isError = %v]",
 			a.SID(),
 			a.UID(),
 			mid,
-			v,
 			isErr,
 		)
 	}
@@ -383,11 +383,10 @@ func (a *Agent) Push(route string, val interface{}) {
 	a.sendPending(pomeloMessage.Push, route, 0, val, false)
 
 	if clog.PrintLevel(zapcore.DebugLevel) {
-		clog.Debugf("[sid = %s,uid = %d] Push ok. [route = %s, message = %+v]",
+		clog.Debugf("[sid = %s,uid = %d] Push ok. [route = %s]",
 			a.SID(),
 			a.UID(),
 			route,
-			val,
 		)
 	}
 }
@@ -424,18 +423,11 @@ func (a *Agent) Kick(reason interface{}, closed bool) {
 	}
 
 	// 不进入pending chan，直接踢了
-	a.write(pkg)
+	a.SendRaw(pkg)
 
 	if closed {
 		a.Close()
 	}
-
-	clog.Infof("[Kick] sid = %s, uid = %d, reason = %+v, closed = %t",
-		a.SID(),
-		a.UID(),
-		reason,
-		closed,
-	)
 }
 
 func (a *Agent) AddOnClose(fn OnCloseFunc) {

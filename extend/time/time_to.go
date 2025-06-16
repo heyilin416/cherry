@@ -1,19 +1,18 @@
 package cherryTime
 
 import (
-	"time"
-
 	cstring "github.com/cherry-game/cherry/extend/string"
 )
 
 // ToSecond 输出秒级时间戳
 func (c CherryTime) ToSecond() int64 {
-	return c.Unix()
+	return c.Time.Unix()
+
 }
 
 // ToMillisecond 输出毫秒级时间戳
 func (c CherryTime) ToMillisecond() int64 {
-	return c.Time.UnixNano() / int64(time.Millisecond)
+	return c.Time.UnixMilli()
 }
 
 func (c CherryTime) ToMillisecondString() string {
@@ -23,12 +22,12 @@ func (c CherryTime) ToMillisecondString() string {
 
 // ToMicrosecond 输出微秒级时间戳
 func (c CherryTime) ToMicrosecond() int64 {
-	return c.UnixNano() / int64(time.Microsecond)
+	return c.Time.UnixMicro()
 }
 
 // ToNanosecond 输出纳秒级时间戳
 func (c CherryTime) ToNanosecond() int64 {
-	return c.UnixNano()
+	return c.Time.UnixNano()
 }
 
 // ToDateMillisecondFormat 2023-04-10 12:26:57.420
@@ -64,8 +63,7 @@ func (c CherryTime) ToShortDateFormat() string {
 // ToShortIntDateFormat 20060102
 func (c CherryTime) ToShortIntDateFormat() int32 {
 	strDate := c.ToShortDateFormat()
-	intDate, _ := cstring.ToInt32(strDate)
-	return intDate
+	return cstring.ToInt32D(strDate, 0)
 }
 
 // ToShortTimeFormat 150405

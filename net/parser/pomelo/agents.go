@@ -65,7 +65,8 @@ func Unbind(sid cfacade.SID) {
 	}
 
 	delete(sidAgentMap, sid)
-	if oldSid, found := uidMap[agent.UID()]; found && oldSid == sid {
+	// sid是自己，则删除uidmap
+	if nowSID, ok := uidMap[agent.UID()]; ok && nowSID == sid {
 		delete(uidMap, agent.UID())
 	}
 
