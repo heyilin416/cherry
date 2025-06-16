@@ -3,10 +3,12 @@ package cherryActor
 import (
 	"strings"
 
+	ccode "github.com/cherry-game/cherry/code"
 	ctime "github.com/cherry-game/cherry/extend/time"
 	cutils "github.com/cherry-game/cherry/extend/utils"
 	cfacade "github.com/cherry-game/cherry/facade"
 	clog "github.com/cherry-game/cherry/logger"
+	cproto "github.com/cherry-game/cherry/net/proto"
 	"go.uber.org/zap/zapcore"
 )
 
@@ -151,6 +153,9 @@ func (p *Actor) processRemote() {
 			if childActor, foundChild := p.findChildActor(m); foundChild {
 				childActor.PostRemote(m)
 			} else {
+				retResponse(m.ClusterReply, &cproto.Response{
+					Code: ccode.ActorCallFail,
+				})
 				clog.Warnf("Child actor not found. path = %s", m.Target)
 			}
 		}
@@ -209,12 +214,13 @@ func (p *Actor) invokeFunc(mb *mailbox, app cfacade.IApplication, fn cfacade.Inv
 		}
 
 		if rev := recover(); rev != nil {
-			clog.Errorf("[%s] Invoke error. [source = %s, target = %s->%s, type = %v]",
+			clog.Errorf("[%s] Invoke error. [source = %s, target = %s->%s, type = %v, recover = %v]",
 				mb.name,
 				m.Source,
 				m.Target,
 				m.FuncName,
 				funcInfo.InArgs,
+				rev,
 			)
 		}
 	}()
@@ -249,7 +255,9 @@ func (p *Actor) findChildActor(m *cfacade.Message) (*Actor, bool) {
 
 func (p *Actor) onInit() {
 	p.state = WorkerState
-	p.handler.OnInit()
+	cutils.Try(p.handler.OnInit, func(err string) {
+		clog.Error(err)
+	})
 }
 
 func (p *Actor) onStop() {

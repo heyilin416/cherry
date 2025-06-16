@@ -37,18 +37,27 @@ func (c *CherryLogger) Print(v ...interface{}) {
 	c.Warn(v)
 }
 
-func SetNodeLogger(node cfacade.INode) {
+func NewNodeLogger(node cfacade.INode, opts ...zap.Option) *CherryLogger {
 	nodeID = node.NodeID()
 	refLoggerName := node.Settings().Get("ref_logger").ToString()
 	if refLoggerName == "" {
 		DefaultLogger.Infof("RefLoggerName not found, used default console logger.")
+		return nil
+	}
+
+	SetFileNameVar("nodeId", node.NodeID())     // %nodeid
+	SetFileNameVar("nodeType", node.NodeType()) // %nodetype
+
+	return NewLogger(refLoggerName, opts...)
+}
+
+func SetNodeLogger(node cfacade.INode) {
+	logger := NewNodeLogger(node, zap.AddCallerSkip(1))
+	if logger == nil {
 		return
 	}
 
-	SetFileNameVar("nodeid", node.NodeID())     // %nodeid
-	SetFileNameVar("nodetype", node.NodeType()) // %nodetype
-
-	DefaultLogger = NewLogger(refLoggerName, zap.AddCallerSkip(1))
+	DefaultLogger = logger
 	printLevel = GetLevel(cprofile.PrintLevel())
 }
 

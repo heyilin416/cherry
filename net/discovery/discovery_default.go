@@ -89,7 +89,7 @@ func (n *DiscoveryDefault) ListByType(nodeType string, filterNodeID ...string) [
 	n.memberMap.Range(func(key, value any) bool {
 		member := value.(cfacade.IMember)
 		if member.GetNodeType() == nodeType {
-			if _, ok := cslice.StringIn(member.GetNodeID(), filterNodeID); !ok {
+			if !cslice.Contains(filterNodeID, member.GetNodeID()) {
 				memberList = append(memberList, member)
 			}
 		}
