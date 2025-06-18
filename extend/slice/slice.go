@@ -60,6 +60,20 @@ func Contains[V comparable](sl []V, v V) bool {
 	return IndexOf(sl, v) >= 0
 }
 
+// Equal 检测切片是否相等
+func Equal[V comparable](a, b []V) bool {
+	if len(a) != len(b) {
+		return false
+	}
+
+	for i := range a {
+		if a[i] != b[i] {
+			return false
+		}
+	}
+	return true
+}
+
 // SafeSub 安全取子切片
 func SafeSub[V any](slice []V, start, end int) []V {
 	sliceLen := len(slice)
