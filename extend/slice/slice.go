@@ -74,6 +74,15 @@ func Equal[V comparable](a, b []V) bool {
 	return true
 }
 
+// SafeGet 安全获取切片中的元素，如果索引越界则返回零值和 false
+func SafeGet[V any](slice []V, index int) (V, bool) {
+	if index < 0 || index >= len(slice) {
+		var zero V
+		return zero, false
+	}
+	return slice[index], true
+}
+
 // SafeSub 安全取子切片
 func SafeSub[V any](slice []V, start, end int) []V {
 	sliceLen := len(slice)
