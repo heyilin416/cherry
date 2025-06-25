@@ -369,6 +369,13 @@ func ConvertAnySlice[T any](s []T) []any {
 	return result
 }
 
+// Copy 复制切片(浅拷贝)
+func Copy[T any](s []T) []T {
+	copied := make([]T, len(s))
+	copy(copied, s)
+	return copied
+}
+
 // StringToInt 将字符串切片转换为int切片(不可转的跳过)
 func StringToInt(strSlice []string) []int {
 	var intSlice []int
