@@ -187,11 +187,12 @@ func Merge[V any](slice1, slice2 []V) []V {
 }
 
 // Map 生成转换后的新切片
-func Map[V1 any, V2 any](slice []V1, a func(V1) V2) (destSlice []V2) {
-	for _, v := range slice {
-		destSlice = append(destSlice, a(v))
+func Map[V1 any, V2 any](slice []V1, a func(V1) V2) []V2 {
+	dest := make([]V2, len(slice))
+	for i, v := range slice {
+		dest[i] = a(v)
 	}
-	return
+	return dest
 }
 
 // Rand 从切片中随机返回一个值(如果切片为空，返回V类型的默认值)
