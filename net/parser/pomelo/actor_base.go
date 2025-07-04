@@ -29,11 +29,11 @@ func (p *ActorBase) ResponseCode(session *cproto.Session, statusCode int32) {
 }
 
 func (p *ActorBase) Push(session *cproto.Session, route string, v interface{}) {
-	Push(p, session.AgentPath, session.Sid, route, v)
+	Push(p, session.AgentPath, session.Sid, session.Uid, route, v)
 }
 
 func (p *ActorBase) Kick(session *cproto.Session, reason interface{}, closed bool) {
-	Kick(p, session.AgentPath, session.Sid, reason, closed)
+	Kick(p, session.AgentPath, session.Sid, session.Uid, reason, closed)
 }
 
 func (p *ActorBase) Broadcast(agentPath string, uidList []int64, allUID bool, route string, v interface{}) {
@@ -76,7 +76,7 @@ func ResponseCode(iActor cfacade.IActor, agentPath, sid string, mid uint32, stat
 	}
 }
 
-func Push(iActor cfacade.IActor, agentPath, sid, route string, v interface{}) {
+func Push(iActor cfacade.IActor, agentPath, sid string, uid int64, route string, v interface{}) {
 	if route == "" {
 		clog.Warn("[Push] route value error.")
 		return
@@ -97,12 +97,12 @@ func Push(iActor cfacade.IActor, agentPath, sid, route string, v interface{}) {
 	iActor.Call(agentPath, PushFuncName, rsp)
 
 	if clog.PrintLevel(zapcore.DebugLevel) {
-		clog.Debugf("[Push] agentPath = %s, sid = %s, route = %s, message = %+v",
-			agentPath, sid, route, v)
+		clog.Debugf("[Push] agentPath = %s, sid = %s, uid = %d, route = %s, message = %+v",
+			agentPath, sid, uid, route, v)
 	}
 }
 
-func Kick(iActor cfacade.IActor, agentPath, sid string, reason interface{}, closed bool) {
+func Kick(iActor cfacade.IActor, agentPath, sid string, uid int64, reason interface{}, closed bool) {
 	data, err := iActor.App().Serializer().Marshal(reason)
 	if err != nil {
 		clog.Warnf("[Kick] Marshal error. reason = %+v", reason)
@@ -117,8 +117,8 @@ func Kick(iActor cfacade.IActor, agentPath, sid string, reason interface{}, clos
 
 	iActor.Call(agentPath, KickFuncName, rsp)
 
-	clog.Infof("[Kick] agentPath = %s, sid = %s, reason = %+v, closed = %t",
-		agentPath, sid, reason, closed)
+	clog.Infof("[Kick] agentPath = %s, sid = %s, uid = %d, reason = %+v, closed = %t",
+		agentPath, sid, uid, reason, closed)
 }
 
 func Broadcast(iActor cfacade.IActor, agentPath string, uidList []int64, allUID bool, route string, v interface{}) {
