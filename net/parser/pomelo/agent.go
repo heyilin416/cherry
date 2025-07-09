@@ -384,6 +384,10 @@ func (a *Agent) Push(route string, val interface{}) {
 	a.sendPending(pomeloMessage.Push, route, 0, val, false)
 
 	if clog.PrintLevel(zapcore.DebugLevel) {
+		switch val.(type) {
+		case []uint8:
+			val = fmt.Sprintf("[%d]byte", len(val.([]uint8)))
+		}
 		clog.Debugf("[sid = %s,uid = %d] Push ok. [route = %s, message = %+v]",
 			a.SID(),
 			a.UID(),
