@@ -111,6 +111,38 @@ func ToInt64D(value string, def ...int64) int64 {
 	return val
 }
 
+func ToFloat64(value string, def ...float64) (float64, bool) {
+	f, err := strconv.ParseFloat(value, 64)
+	if err != nil {
+		if len(def) > 0 {
+			return def[0], false
+		}
+		return 0, false
+	}
+	return f, true
+}
+
+func ToFloat64D(value string, def ...float64) float64 {
+	f, _ := ToFloat64(value, def...)
+	return f
+}
+
+func ToFloat32(value string, def ...float32) (float32, bool) {
+	f64, ok := ToFloat64(value)
+	if !ok {
+		if len(def) > 0 {
+			return def[0], false
+		}
+		return 0, false
+	}
+	return float32(f64), true
+}
+
+func ToFloat32D(value string, def ...float32) float32 {
+	f, _ := ToFloat32(value, def...)
+	return f
+}
+
 func ToString(value interface{}) string {
 	ret := ""
 
