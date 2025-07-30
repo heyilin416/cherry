@@ -109,14 +109,18 @@ func EncodeLocalArgs(app cfacade.IApplication, fi *creflect.FuncInfo, m *cfacade
 }
 
 func EncodeArgs(app cfacade.IApplication, fi *creflect.FuncInfo, index int, m *cfacade.Message) error {
-	argBytes, ok := m.Args.([]byte)
-	if !ok {
-		return cerror.Errorf("Encode args error.[source = %s, target = %s -> %s, funcType = %v]",
-			m.Source,
-			m.Target,
-			m.FuncName,
-			fi.InArgs,
-		)
+	var argBytes []byte
+	if m.Args != nil {
+		var ok bool
+		argBytes, ok = m.Args.([]byte)
+		if !ok {
+			return cerror.Errorf("Encode args error.[source = %s, target = %s -> %s, funcType = %v]",
+				m.Source,
+				m.Target,
+				m.FuncName,
+				fi.InArgs,
+			)
+		}
 	}
 
 	argValue := reflect.New(fi.InArgs[index].Elem()).Interface()
