@@ -370,6 +370,14 @@ func ConvertAnySlice[T any](s []T) []any {
 	return result
 }
 
+// NilToEmptySlice 将nil切片转换为空切片
+func NilToEmptySlice[T any](slice []T) []T {
+	if slice == nil {
+		return make([]T, 0)
+	}
+	return slice
+}
+
 // Copy 复制切片(浅拷贝)
 func Copy[T any](s []T) []T {
 	copied := make([]T, len(s))
