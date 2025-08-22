@@ -370,6 +370,10 @@ func (a *Agent) ResponseMID(mid uint32, v interface{}, isError ...bool) {
 
 	a.sendPending(pomeloMessage.Response, "", mid, v, isErr)
 	if clog.PrintLevel(zapcore.DebugLevel) {
+		switch v.(type) {
+		case []uint8:
+			v = fmt.Sprintf("[%d]byte", len(v.([]uint8)))
+		}
 		clog.Debugf("[sid = %s,uid = %d] Response ok. [mid = %d, message = %+v, isError = %v]",
 			a.SID(),
 			a.UID(),
