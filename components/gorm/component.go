@@ -14,17 +14,18 @@ import (
 
 const (
 	Name = "gorm_component"
-	dsn  = "%s:%s@(%s)/%s?charset=utf8&parseTime=True&loc=Local"
+	dsn  = "%s:%s@(%s)/%s?charset=utf8mb4&parseTime=True&loc=Local"
 )
 
 type (
 	Component struct {
 		cfacade.Component
 		// key:groupID,value:{key:id,value:*gorm.Db}
-		ormMap map[string]map[string]*gorm.DB
+		ormMap         map[string]map[string]*gorm.DB
+		mySqlConfigMap map[string]*MySqlConfig
 	}
 
-	mySqlConfig struct {
+	MySqlConfig struct {
 		Enable         bool
 		GroupID        string
 		ID             string
@@ -44,7 +45,8 @@ type (
 
 func NewComponent() *Component {
 	return &Component{
-		ormMap: make(map[string]map[string]*gorm.DB),
+		ormMap:         make(map[string]map[string]*gorm.DB),
+		mySqlConfigMap: make(map[string]*MySqlConfig),
 	}
 }
 
@@ -52,8 +54,8 @@ func (s *Component) Name() string {
 	return Name
 }
 
-func parseMysqlConfig(groupID string, item cfacade.ProfileJSON) *mySqlConfig {
-	return &mySqlConfig{
+func parseMysqlConfig(groupID string, item cfacade.ProfileJSON) *MySqlConfig {
+	return &MySqlConfig{
 		GroupID:        groupID,
 		ID:             item.GetString("db_id"),
 		DSN:            item.GetString("dsn", ""),
@@ -104,13 +106,14 @@ func (s *Component) Init() {
 				}
 
 				s.ormMap[groupID][mysqlConfig.ID] = db
+				s.mySqlConfigMap[mysqlConfig.ID] = mysqlConfig
 				clog.Infof("[dbGroup =%s, dbName = %s] is connected.", mysqlConfig.GroupID, mysqlConfig.ID)
 			}
 		}
 	}
 }
 
-func (s *Component) createORM(cfg *mySqlConfig) (*gorm.DB, error) {
+func (s *Component) createORM(cfg *MySqlConfig) (*gorm.DB, error) {
 	db, err := gorm.Open(mysql.Open(cfg.GetDSN()), &gorm.Config{
 		Logger: getLogger(),
 	})
@@ -174,10 +177,14 @@ func (s *Component) GetDbMap(groupID string) (map[string]*gorm.DB, bool) {
 	return dbGroup, found
 }
 
-func (s *mySqlConfig) GetDSN() string {
+func (s *MySqlConfig) GetDSN() string {
 	if s.DSN == "" {
 		s.DSN = dsn
 	}
 
 	return fmt.Sprintf(s.DSN, s.UserName, s.Password, s.Host, s.DbName)
+}
+
+func (s *Component) GetMysqlConfig(dbID string) *MySqlConfig {
+	return s.mySqlConfigMap[dbID]
 }
