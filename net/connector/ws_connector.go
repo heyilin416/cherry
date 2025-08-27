@@ -177,11 +177,13 @@ func (c *WSConn) SetDeadline(t time.Time) error {
 }
 
 func (c *WSConn) RemoteAddr() net.Addr {
+	add := c.Conn.RemoteAddr().(*net.TCPAddr)
 	if c.realIP != "" {
-		if addr, err := net.ResolveIPAddr("ip", c.realIP); err == nil {
-			return addr
+		if ip := net.ParseIP(c.realIP); ip != nil {
+			add.IP = ip
+		} else {
+			clog.Warnf("invalid real ip: %s", c.realIP)
 		}
-		return &net.IPAddr{IP: net.ParseIP(c.realIP)}
 	}
-	return c.Conn.RemoteAddr()
+	return add
 }
