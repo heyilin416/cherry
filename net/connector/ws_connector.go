@@ -2,7 +2,9 @@ package cherryConnector
 
 import (
 	"io"
+	"net"
 	"net/http"
+	"strings"
 	"time"
 
 	cfacade "github.com/cherry-game/cherry/facade"
@@ -24,6 +26,7 @@ type (
 		*websocket.Conn
 		typ    int // message type
 		reader io.Reader
+		realIP string
 	}
 )
 
@@ -95,6 +98,24 @@ func (w *WSConnector) SetUpgrade(upgrade *websocket.Upgrader) {
 	}
 }
 
+func getRealIP(r *http.Request) string {
+	forwarded := r.Header.Get("X-Forwarded-For")
+	if forwarded != "" {
+		ips := strings.Split(forwarded, ",")
+		if len(ips) > 0 {
+			return strings.TrimSpace(ips[0])
+		}
+	}
+
+	realIP := r.Header.Get("X-Real-IP")
+	if realIP != "" {
+		return realIP
+	}
+
+	host, _, _ := net.SplitHostPort(r.RemoteAddr)
+	return host
+}
+
 func (w *WSConnector) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	wsConn, err := w.upgrade.Upgrade(rw, r, nil)
 	if err != nil {
@@ -102,14 +123,15 @@ func (w *WSConnector) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	conn := NewWSConn(wsConn)
+	conn := NewWSConn(wsConn, getRealIP(r))
 	w.InChan(&conn)
 }
 
 // NewWSConn return an initialized *WSConn
-func NewWSConn(conn *websocket.Conn) WSConn {
+func NewWSConn(conn *websocket.Conn, realIP string) WSConn {
 	c := WSConn{
-		Conn: conn,
+		Conn:   conn,
+		realIP: realIP,
 	}
 	return c
 }
@@ -152,4 +174,14 @@ func (c *WSConn) SetDeadline(t time.Time) error {
 	}
 
 	return c.SetWriteDeadline(t)
+}
+
+func (c *WSConn) RemoteAddr() net.Addr {
+	if c.realIP != "" {
+		if addr, err := net.ResolveIPAddr("ip", c.realIP); err == nil {
+			return addr
+		}
+		return &net.IPAddr{IP: net.ParseIP(c.realIP)}
+	}
+	return c.Conn.RemoteAddr()
 }

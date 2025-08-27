@@ -3,6 +3,7 @@ package cherryGin
 import (
 	"io"
 	"net/http"
+	"strings"
 
 	cslice "github.com/cherry-game/cherry/extend/slice"
 	cstring "github.com/cherry-game/cherry/extend/string"
@@ -17,6 +18,23 @@ const (
 
 type Context struct {
 	*gin.Context
+}
+
+func (g *Context) ClientIP() string {
+	forwarded := g.GetHeader("X-Forwarded-For")
+	if forwarded != "" {
+		ips := strings.Split(forwarded, ",")
+		if len(ips) > 0 {
+			return strings.TrimSpace(ips[0])
+		}
+	}
+
+	realIP := g.GetHeader("X-Real-IP")
+	if realIP != "" {
+		return realIP
+	}
+
+	return g.Context.ClientIP()
 }
 
 func (g *Context) GetBody() string {
