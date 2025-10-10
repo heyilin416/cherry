@@ -11,5 +11,5 @@ type gormLogger struct {
 }
 
 func (l gormLogger) Printf(s string, i ...interface{}) {
-	l.log.Debugf(strings.ReplaceAll(s, "\n", ""), i...)
+	l.log.Infof(strings.ReplaceAll(s, "\n", ""), i...)
 }
