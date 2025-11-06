@@ -76,7 +76,7 @@ func (p *Conn) Request(subj string, data []byte, timeout ...time.Duration) (*nat
 func (p *Conn) ChanExecute(subject string, msgChan chan *nats.Msg, process func(msg *nats.Msg)) {
 	_, chanErr := p.ChanSubscribe(subject, msgChan)
 	if chanErr != nil {
-		clog.Error("subscribe fail. [subject = %s, err = %s]", subject, chanErr)
+		clog.Errorf("subscribe fail. [subject = %s, err = %s]", subject, chanErr)
 		return
 	}
 
