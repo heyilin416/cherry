@@ -361,11 +361,15 @@ func Shuffle[V any](slice []V) []V {
 	return slice
 }
 
-// ConvertAnySlice 将切片转换为any切片
-func ConvertAnySlice[T any](s []T) []any {
-	result := make([]any, len(s))
-	for i, v := range s {
-		result[i] = v
+// ConvertSlice 将切片转换为其它类型的切片
+func ConvertSlice[T1 any, T2 any](slice []T1, converter func(T1) T2) []T2 {
+	if slice == nil {
+		return nil
+	}
+
+	result := make([]T2, len(slice))
+	for i, v := range slice {
+		result[i] = converter(v)
 	}
 	return result
 }
