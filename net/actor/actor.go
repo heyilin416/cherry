@@ -49,6 +49,7 @@ type (
 		event            *actorEvent           // event
 		child            *actorChild           // child actor
 		timer            *actorTimer           // timer
+		callback         chan func()           // callback
 		lastAt           int64                 // last process time (count of seconds)
 		arrivalElapsed   int64                 // arrival elapsed for message
 		executionElapsed int64                 // execution elapsed for message
@@ -70,7 +71,8 @@ func (p *Actor) loop() bool {
 	if p.state == StopState {
 		if p.localMail.Count() < 1 &&
 			p.remoteMail.Count() < 1 &&
-			p.event.Count() < 1 {
+			p.event.Count() < 1 &&
+			len(p.callback) < 1 {
 			return true
 		}
 	}
@@ -87,6 +89,14 @@ func (p *Actor) loop() bool {
 	case <-p.event.C:
 		{
 			p.processEvent()
+		}
+	case cb := <-p.callback:
+		{
+			if cb != nil {
+				cutils.Try(cb, func(errString string) {
+					clog.Error(errString)
+				})
+			}
 		}
 	case <-p.close:
 		{
@@ -366,6 +376,19 @@ func (p *Actor) PostEvent(data cfacade.IEventData) {
 	p.system.PostEvent(data)
 }
 
+func (p *Actor) Go(f func(), cb func()) {
+	go func() {
+		defer func() {
+			p.callback <- cb
+			if r := recover(); r != nil {
+				clog.Error("%v", r)
+			}
+		}()
+
+		f()
+	}()
+}
+
 func newActor(actorID, childID string, handler cfacade.IActorHandler, c *System) (*Actor, error) {
 	if strings.TrimSpace(actorID) == "" {
 		clog.Error("[newActor] actor id is nil.")
@@ -399,6 +422,8 @@ func newActor(actorID, childID string, handler cfacade.IActorHandler, c *System)
 
 	timer := newTimer(&thisActor)
 	thisActor.timer = &timer
+
+	thisActor.callback = make(chan func(), 1000)
 
 	// register update timer func
 	thisActor.remoteMail.Register(updateTimerFuncName, thisActor.timer._updateTimer_)
